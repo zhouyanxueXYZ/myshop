@@ -3,7 +3,7 @@
     <el-header class="home-header">
       <el-row type="flex" align="middle" class="el-row">
         <el-col :span="6" class="el-col">
-          <img src="../assets/toplogo.png" alt>
+          <img src="../assets/toplogo.png" alt />
         </el-col>
         <el-col :span="24">
           <h1>电商后台管理系统</h1>
@@ -19,25 +19,23 @@
     <el-container>
       <el-aside width="200px" class="home-aside">
         <el-menu
-          default-active="2"
+          default-active="$route.path"
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
           background-color="#545c64"
           text-color="#fff"
           active-text-color="#ffd04b"
+          :unique-opened="true"
+          :router="true"
         >
-          <el-submenu index="1">
+          <el-submenu v-for="item in leftList" :key="item.id" :index="item.path">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{item.authName}}</span>
             </template>
-            <el-menu-item-group>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>用户列表
-              </el-menu-item>
-              <el-menu-item index="1-2">
-                <i class="el-icon-menu"></i>选项2
+            <el-menu-item-group v-for="v in item.children" :key="v.id">
+              <el-menu-item :index="v.path">
+                <i class="el-icon-menu"></i>
+                {{v.authName}}
               </el-menu-item>
             </el-menu-item-group>
           </el-submenu>
@@ -48,9 +46,12 @@
   </el-container>
 </template>
 <script>
+import axios from "axios";
 export default {
   data() {
-    return {};
+    return {
+      leftList: []
+    };
   },
   methods: {
     open() {
@@ -73,6 +74,16 @@ export default {
           });
         });
     }
+  },
+  created() {
+    axios({
+      url: "http://localhost:8888/api/private/v1/menus",
+      method: "get",
+      headers: { Authorization: localStorage.getItem("token") }
+    }).then(({ data: { data, meta } }) => {
+      console.log(data);
+      this.leftList = data;
+    });
   }
 };
 </script>
