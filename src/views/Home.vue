@@ -83,7 +83,7 @@ export default {
       method: "get",
       headers: { Authorization: localStorage.getItem("token") }
     }).then(({ data: { data, meta } }) => {
-      console.log(data);
+      // console.log(data);
       this.leftList = data;
     });
   }
