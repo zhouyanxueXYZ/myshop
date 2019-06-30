@@ -67,6 +67,7 @@ export default {
             type: "success",
             message: "退出成功!"
           });
+          localStorage.setItem("token", "");
           this.$router.push("/login");
         })
         .catch(() => {
@@ -79,9 +80,8 @@ export default {
   },
   created() {
     axios({
-      url: "http://localhost:8888/api/private/v1/menus",
-      method: "get",
-      headers: { Authorization: localStorage.getItem("token") }
+      url: "menus",
+      method: "get"
     }).then(({ data: { data, meta } }) => {
       // console.log(data);
       this.leftList = data;
