@@ -12,55 +12,66 @@
     <el-row :gutter="20">
       <el-col :span="7">
         <div class="demo-input-size">
-          <el-input placeholder="请输入搜索内容" v-model="input1">
-            <el-button slot="append" icon="el-icon-search"></el-button>
+          <el-input placeholder="请输入搜索内容" v-model="keywords" @keyup.enter.native="searchUsers">
+            <el-button slot="append" icon="el-icon-search" @click="searchUsers"></el-button>
           </el-input>
         </div>
       </el-col>
       <el-col :span="4">
         <template>
           <el-button type="success" plain @click="dialogFormVisible = true">添加用户</el-button>
-          <el-dialog title="添加用户" :visible.sync="dialogFormVisible">
-            <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
-              <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
-                <el-input v-model=" ruleForm.username" autocomplete="off"></el-input>
-              </el-form-item>
-              <el-form-item label="密码" :label-width="formLabelWidth" prop="password">
-                <el-input
-                  type="password"
-                  v-model=" ruleForm.password"
-                  autocomplete="off"
-                  show-password
-                ></el-input>
-              </el-form-item>
-              <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
-                <el-input v-model=" ruleForm.email" autocomplete="off"></el-input>
-              </el-form-item>
-              <el-form-item label="手机" :label-width="formLabelWidth" prop="mobile">
-                <el-input v-model=" ruleForm.mobile" autocomplete="off"></el-input>
-              </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button @click="dialogFormVisible = false">取 消</el-button>
-              <el-button type="primary" @click="submitForm('ruleForm')">确 定</el-button>
-            </div>
-          </el-dialog>
         </template>
       </el-col>
     </el-row>
-
+    <el-dialog title="添加用户" :visible.sync="dialogFormVisible">
+      <el-form :model="ruleForm" :rules="rules" ref="ruleForm">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-input v-model=" ruleForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" :label-width="formLabelWidth" prop="password">
+          <el-input type="password" v-model=" ruleForm.password" autocomplete="off" show-password></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model=" ruleForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="手机" :label-width="formLabelWidth" prop="mobile">
+          <el-input v-model=" ruleForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitForm('ruleForm')">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog title="修改用户信息" :visible.sync="dialogEditVisible">
+      <el-form :model="editForm" :rules="editrules" ref="editForm">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-tag type="info">{{editForm.username}}</el-tag>
+        </el-form-item>
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model=" editForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="mobile">
+          <el-input v-model=" editForm.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogEditVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editFormData('editForm')">确 定</el-button>
+      </div>
+    </el-dialog>
     <el-table :data="tableData" stripe style="width: 100%">
       <el-table-column prop="username" label="姓名" width="180"></el-table-column>
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
       <el-table-column prop="mobile" label="电话" width="180"></el-table-column>
       <el-table-column label="用户状态">
         <template v-slot="{row}">
-          <el-switch v-model="row.mg_state" @change="cState(row.id)"></el-switch>
+          <el-switch v-model="row.mg_state" @change="cState(row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
         <template v-slot="{row}">
-          <el-button type="primary" plain size="mini" @click="dialogFormVisible = true">
+          <el-button type="primary" plain size="mini" @click="editOpen(row.id)">
             <i class="el-icon-edit"></i>
           </el-button>
           <el-button type="danger" plain size="mini" @click="delUser(row.id)">
@@ -79,6 +90,7 @@
       :total="totalPage"
       :page-size="pageSize"
       :current-page="currentpage"
+      @current-change="pageChange"
     ></el-pagination>
   </div>
 </template>
@@ -90,10 +102,11 @@ export default {
     return {
       tableData: [],
       pageSize: 3,
-      input1: "",
-      totalPage: 3,
+      totalPage: 0,
       currentpage: 1,
+      keywords: "",
       dialogFormVisible: false,
+      dialogEditVisible: false,
       ruleForm: {
         username: "",
         password: "",
@@ -124,6 +137,28 @@ export default {
             trigger: "blur"
           }
         ]
+      },
+      editForm: {
+        id: 0,
+        username: "",
+        email: "",
+        mobile: ""
+      },
+      editrules: {
+        email: [
+          {
+            pattern: /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/,
+            message: "请输入正确的邮箱格式",
+            trigger: "blur"
+          }
+        ],
+        mobile: [
+          {
+            pattern: /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/,
+            message: "手机号码格式不正确",
+            trigger: "blur"
+          }
+        ]
       }
     };
   },
@@ -136,9 +171,9 @@ export default {
         url: "users",
         method: "get",
         params: {
-          query: "",
-          pagenum: 1,
-          pagesize: 4
+          query: this.keywords,
+          pagenum: this.currentpage,
+          pagesize: this.pageSize
         }
       }).then(({ data: { data, meta } }) => {
         // console.log(data);
@@ -206,13 +241,74 @@ export default {
         }
       });
     },
-    async cState(id) {
+    async cState(user) {
       let res = await axios({
-        url: `users/${id}/${t}`,
+        url: `users/${user.id}/state/${user.mg_state}`,
         method: "put"
       });
+      let {
+        data: { data, meta }
+      } = res;
+      if (meta.status == 200) {
+        this.$message({
+          type: "success",
+          message: meta.msg,
+          duration: 1000
+        });
+      } else {
+        this.message({
+          type: "error",
+          message: meta.msg,
+          duration: 1000
+        });
+        user.mg_state = !user.mg_state;
+      }
+    },
+    pageChange(page) {
+      this.currentpage = page;
+      this.getUsers();
+    },
+    searchUsers() {
+      this.getUsers();
+    },
+    async editOpen(id) {
+      this.dialogEditVisible = true;
+      let res = await axios({
+        url: `users/${id}`
+      });
       console.log(res);
-      // this.getUsers();
+      this.editForm = res.data.data;
+    },
+    editFormData(editForm) {
+      this.$refs[editForm].validate(valid => {
+        if (valid) {
+          axios({
+            url: `users/${this.editForm.id}`,
+            method: "put",
+            data: {
+              email: this.editForm.email,
+              mobile: this.editForm.mobile
+            }
+          }).then(({ data: { data, meta } }) => {
+            // console.log(res);
+            if (meta.status == 200) {
+              this.$message({
+                type: "success",
+                message: meta.msg,
+                duration: 1000
+              });
+              this.getUsers();
+              this.dialogEditVisible = false;
+            } else {
+              this.$message({
+                type: "error",
+                message: meta.msg,
+                duration: 1000
+              });
+            }
+          });
+        }
+      });
     }
   }
 };
