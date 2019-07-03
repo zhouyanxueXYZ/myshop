@@ -10,7 +10,7 @@
       <el-breadcrumb-item>角色列表</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-table :data="tableData" style="width: 100%">
+    <el-table :data="tableData" style="width: 100%" stripe>
       <el-table-column type="expand">
         <template v-slot="row">
           <el-form label-position="left" inline class="demo-table-expand">
