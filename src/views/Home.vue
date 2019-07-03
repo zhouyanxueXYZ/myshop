@@ -33,7 +33,7 @@
               <span>{{item.authName}}</span>
             </template>
             <el-menu-item-group v-for="v in item.children" :key="v.id">
-              <el-menu-item :index="v.path">
+              <el-menu-item :index="'/'+v.path">
                 <i class="el-icon-menu"></i>
                 {{v.authName}}
               </el-menu-item>

@@ -4,7 +4,7 @@ import Router from "vue-router"
 import Login from "./views/Login.vue"
 import Home from "./views/Home.vue"
 import Users from "./views/Users.vue"
-import Roles from "./views/Roles.vue"
+import Roles from "./views/Roles/Roles.vue"
 import Rights from "./views/Rights.vue"
 
 Vue.use(Router)

@@ -276,7 +276,7 @@ export default {
       let res = await axios({
         url: `users/${id}`
       });
-      console.log(res);
+      // console.log(res);
       this.editForm = res.data.data;
     },
     editFormData(editForm) {
